@@ -14,7 +14,7 @@ class SelfBot(discord.Client):
         # Start the web server and voice channel task
         self.loop.create_task(self.start_web_server())
         self.loop.create_task(self.stay_in_voice_channel())
-        self.loop.create_task(self.send_message_loop())  # Start sending messages every 30 min
+        # self.loop.create_task(self.send_message_loop())  # Start sending messages every 30 min
     
     async def start_web_server(self):
         """Start a simple web server to satisfy Render's port requirement"""
@@ -49,18 +49,18 @@ class SelfBot(discord.Client):
                 print(f"Error occurred: {e}")
             await asyncio.sleep(60)
 
-    async def send_message_loop(self):
-        """Sends a random message every 30 minutes to the text chat of the voice channel."""
-        await self.wait_until_ready()
-        while not self.is_closed():
-            try:
-                channel = self.get_channel(VOICE_CHANNEL_ID)
-                if channel:
-                    message = self.get_random_quote()
-                    await channel.send(f"{message}")
-                    print(f"Sent message: {message}")
-                else:
-                    print("No available text channel found.")
+    # async def send_message_loop(self):
+    #     """Sends a random message every 30 minutes to the text chat of the voice channel."""
+    #     await self.wait_until_ready()
+    #     while not self.is_closed():
+    #         try:
+    #             channel = self.get_channel(VOICE_CHANNEL_ID)
+    #             if channel:
+    #                 message = self.get_random_quote()
+    #                 await channel.send(f"{message}")
+    #                 print(f"Sent message: {message}")
+    #             else:
+    #                 print("No available text channel found.")
 
                 # if isinstance(channel, discord.VoiceChannel):
                 #     text_channel = channel.guild.system_channel or discord.utils.get(channel.guild.text_channels)
@@ -72,10 +72,10 @@ class SelfBot(discord.Client):
                 #         print("No available text channel found.")
                 # else:
                 #     print(f"Voice channel {VOICE_CHANNEL_ID} not found.")
-            except Exception as e:
-                print(f"Error sending message: {e}")
-
-            await asyncio.sleep(1800)  # 30 minutes
+            # except Exception as e:
+            #     print(f"Error sending message: {e}")
+            #
+            # await asyncio.sleep(1800)  # 30 minutes
 
     def get_random_quote(self):
         """Reads quotes from a file and returns a random one."""
