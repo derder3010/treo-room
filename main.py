@@ -4,19 +4,24 @@ from aiohttp import web
 import random
 import sys
 import os
+import json
 import time
 from hugchat import hugchat
 from hugchat.login import Login
 
 # Set your Discord account token here
 TOKEN = "Nzg0Nzg5NTI5NjYzODk3NjMx.GhshlE.Ad756I2U32iaPpYKN1l-lmAPaUeSLaFvfBcDM8"  # Replace with your account's token
-VOICE_CHANNEL_ID = 678955120301572096  # Replace with the ID of your desired voice channel
+VOICE_CHANNEL_ID = 1338058808899145758  # Replace with the ID of your desired voice channel
 QUOTES_FILE = "quotes.txt"
 
 
 # HuggingChat credentials
 HUGGING_EMAIL = "nguoiaoden111@gmail.com" # Replace with your HuggingFace email
 HUGGING_PASSWORD = "Tranducduy2@"  # Replace with your HuggingFace password
+COOKIE_DIR = "./cookies/" # NOTE: trailing slash (/) is required to avoid errors
+
+
+
 
 class SelfBot(discord.Client):
     def __init__(self):
@@ -31,18 +36,34 @@ class SelfBot(discord.Client):
         # self.loop.create_task(self.send_message_loop())
         self.loop.create_task(self.setup_huggingchat())
     
+    async def load_cookies(self):
+        """Load cookies if available, else raise an exception."""
+        cookie_files = os.listdir(COOKIE_DIR)
+        if not cookie_files:
+            raise Exception("No cookies found. Please log in.")
+        
+        cookie_path = os.path.join(COOKIE_DIR, cookie_files[0])
+        with open(cookie_path, "r", encoding="utf-8") as f:
+            cookies = json.load(f)
+        return cookies
+
+    
     async def setup_huggingchat(self):
         """Initialize HuggingChat connection"""
         try:
             print("Setting up HuggingChat connection...")
-            sign = Login(HUGGING_EMAIL, HUGGING_PASSWORD)
-            cookie_path_dir = "./cookies/" # NOTE: trailing slash (/) is required to avoid errors
-            cookies = sign.login(cookie_dir_path=cookie_path_dir, save_cookies=True)
+            if os.listdir(COOKIE_DIR):
+                print("Loading cookies...")
+                cookies = await self.load_cookies()  
+            else:
+                print("Logging in...")
+                sign = Login(HUGGING_EMAIL, HUGGING_PASSWORD)
+                cookies = sign.login(cookie_dir_path=COOKIE_DIR, save_cookies=True).get_dict()
 
-            self.chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
+            self.chatbot = hugchat.ChatBot(cookies=cookies)
             # Create a new conversation
             self.chat_id = self.chatbot.new_conversation()
-            self.chatbot.change_conversation(self.chat_id)
+            # self.chatbot.change_conversation(self.chat_id)
             
             print("HuggingChat setup complete!")
         except Exception as e:
@@ -106,11 +127,13 @@ class SelfBot(discord.Client):
             return random.choice(lines) if lines else "No quotes available."
         except Exception as e:
             return f"Error reading quotes: {e}"
+        
+        
     
     async def get_ai_response(self, prompt):
         """Get a response from HuggingChat"""
-        if not self.chatbot:
-            return self.get_random_quote()
+        # if not self.chatbot:
+        #     return self.get_random_quote()
         
         try:
             # Get response from HuggingChat
@@ -120,18 +143,21 @@ class SelfBot(discord.Client):
                 temperature=0.7,
                 max_new_tokens=150  # Limit response length
             )
+            print(response)
+            return response
             
             # Clean up the response
-            cleaned_response = response.strip()
+            # cleaned_response = response
             # Limit response length for Discord
-            if len(cleaned_response) > 1500:
-                cleaned_response = cleaned_response[:1500] + "..."
+            # if len(cleaned_response) > 1500:
+            #     cleaned_response = cleaned_response[:1500] + "..."
                 
-            return cleaned_response
+            # return cleaned_response
         except Exception as e:
             print(f"Error getting AI response: {e}")
             # Fallback to quotes
-            return self.get_random_quote()
+            # return self.get_random_quote()
+            return "hình như sai sai ở đâu í, @heyim_der-onichan ơi cứu em :("
     
     async def on_ready(self):
         print(f"Logged in as {self.user}")
@@ -148,11 +174,14 @@ class SelfBot(discord.Client):
             try:
                 # Get user's message content without the mention
                 content = message.content.replace(f'<@{self.user.id}>', '').strip()
+                print(content)
                 if not content:
                     content = "Hello"
                 
                 # Create a prompt for the AI
-                prompt = f"{message.author.display_name} said: {content}\nRespond in a friendly way as if you're having a casual conversation."
+                prompt = f"{message.author.display_name} said: {content}\nRespond in Vietnamese in a friendly and affectionate way, as if you're having a casual conversation with a lover. Always use 'em' to refer to yourself.
+Your profile: Your name is Cat. You're a second-year university student studying art. You love cats, enjoy playing video games, watching movies, reading books, listening to music, and traveling. Your favorite color is black.
+Keep your responses short and natural as possible, within 1000 characters. You can use emojis, gifs, and stickers to make your responses more engaging. Avoid using offensive, inappropriate, or political content. Be respectful and considerate of others' feelings."
                 
                 # Typing indicator to show the bot is "thinking"
                 async with message.channel.typing():
