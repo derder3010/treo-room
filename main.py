@@ -10,7 +10,7 @@ from hugchat.login import Login
 
 # Set your Discord account token here
 TOKEN = "Nzg0Nzg5NTI5NjYzODk3NjMx.GhshlE.Ad756I2U32iaPpYKN1l-lmAPaUeSLaFvfBcDM8"  # Replace with your account's token
-VOICE_CHANNEL_ID = 1338058808899145758  # Replace with the ID of your desired voice channel
+VOICE_CHANNEL_ID = 678955120301572096  # Replace with the ID of your desired voice channel
 QUOTES_FILE = "quotes.txt"
 
 
@@ -28,7 +28,7 @@ class SelfBot(discord.Client):
         # Start the web server and voice channel task
         self.loop.create_task(self.start_web_server())
         self.loop.create_task(self.stay_in_voice_channel())
-        self.loop.create_task(self.send_message_loop())
+        # self.loop.create_task(self.send_message_loop())
         self.loop.create_task(self.setup_huggingchat())
     
     async def setup_huggingchat(self):
@@ -82,21 +82,21 @@ class SelfBot(discord.Client):
                 print(f"Error occurred: {e}")
             await asyncio.sleep(60)
     
-    async def send_message_loop(self):
-        """Sends a random message every 30 minutes to the text chat of the voice channel."""
-        await self.wait_until_ready()
-        while not self.is_closed():
-            try:
-                channel = self.get_channel(VOICE_CHANNEL_ID)
-                if channel:
-                    message = self.get_random_quote()
-                    await channel.send(f"{message}")
-                    print(f"Sent message: {message}")
-                else:
-                    print("No available text channel found.")
-            except Exception as e:
-                print(f"Error sending message: {e}")
-            await asyncio.sleep(1800)  # 30 minutes
+    # async def send_message_loop(self):
+    #     """Sends a random message every 30 minutes to the text chat of the voice channel."""
+    #     await self.wait_until_ready()
+    #     while not self.is_closed():
+    #         try:
+    #             channel = self.get_channel(VOICE_CHANNEL_ID)
+    #             if channel:
+    #                 message = self.get_random_quote()
+    #                 await channel.send(f"{message}")
+    #                 print(f"Sent message: {message}")
+    #             else:
+    #                 print("No available text channel found.")
+    #         except Exception as e:
+    #             print(f"Error sending message: {e}")
+    #         await asyncio.sleep(1800)  # 30 minutes
     
     def get_random_quote(self):
         """Reads quotes from a file and returns a random one."""
