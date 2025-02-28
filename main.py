@@ -19,6 +19,7 @@ QUOTES_FILE = "quotes.txt"
 HUGGING_EMAIL = "nguoiaoden111@gmail.com" # Replace with your HuggingFace email
 HUGGING_PASSWORD = "Tranducduy2@"  # Replace with your HuggingFace password
 COOKIE_DIR = "./cookies/" # NOTE: trailing slash (/) is required to avoid errors
+ASSISTANT_ID = "65ddfa3539b31e70f8b55dfb"  # Name of the assistant to use in prompts
 
 
 
@@ -35,6 +36,7 @@ class SelfBot(discord.Client):
         self.loop.create_task(self.stay_in_voice_channel())
         # self.loop.create_task(self.send_message_loop())
         self.loop.create_task(self.setup_huggingchat())
+        self.loop.create_task(self.reset_chat_loop())
     
     async def load_cookies(self):
         """Load cookies if available, else raise an exception."""
@@ -62,7 +64,7 @@ class SelfBot(discord.Client):
 
             self.chatbot = hugchat.ChatBot(cookies=cookies)
             # Create a new conversation
-            self.chat_id = self.chatbot.new_conversation()
+            self.chat_id = self.chatbot.new_conversation(assistant=ASSISTANT_ID, switch_to = True)
             # self.chatbot.change_conversation(self.chat_id)
             
             print("HuggingChat setup complete!")
@@ -119,6 +121,28 @@ class SelfBot(discord.Client):
     #             print(f"Error sending message: {e}")
     #         await asyncio.sleep(1800)  # 30 minutes
     
+    async def reset_chat_loop(self):
+        """Creates a new HuggingChat conversation every 30 minutes."""
+        await self.wait_until_ready()
+        while not self.is_closed():
+            try:
+                print("Creating new HuggingChat conversation...")
+                if self.chatbot:
+                    # Create a new conversation
+                    self.chat_id = self.chatbot.new_conversation(assistant=ASSISTANT_ID, switch_to = True)
+                    # self.chatbot.change_conversation(self.chat_id)
+                    print(f"New conversation created with ID: {self.chat_id}")
+                    
+                    # Optionally announce this in a channel
+                    # channel = self.get_channel(VOICE_CHANNEL_ID)
+                    # if channel:
+                    #     await channel.send("Mình vừa tạo lại trí nhớ nè, hãy trò chuyện với mình! 😊")
+                else:
+                    print("Chatbot not initialized, cannot create new conversation")
+            except Exception as e:
+                print(f"Error creating new conversation: {e}")
+            await asyncio.sleep(1800)  # 30 minutes
+    
     def get_random_quote(self):
         """Reads quotes from a file and returns a random one."""
         try:
@@ -141,22 +165,12 @@ class SelfBot(discord.Client):
                 self.chatbot.chat, 
                 prompt,
                 temperature=0.7,
-                max_new_tokens=150  # Limit response length
+                webweb_search=True
             )
             print(response)
             return response
-            
-            # Clean up the response
-            # cleaned_response = response
-            # Limit response length for Discord
-            # if len(cleaned_response) > 1500:
-            #     cleaned_response = cleaned_response[:1500] + "..."
-                
-            # return cleaned_response
         except Exception as e:
             print(f"Error getting AI response: {e}")
-            # Fallback to quotes
-            # return self.get_random_quote()
             return "hình như sai sai ở đâu í, @heyim_der-onichan ơi cứu em :("
     
     async def on_ready(self):
@@ -179,7 +193,7 @@ class SelfBot(discord.Client):
                     content = "Hello"
                 
                 # Create a prompt for the AI
-                prompt = f"{message.author.display_name} said: {content}\nRespond in Vietnamese in a friendly and affectionate way, as if you're having a casual conversation with a lover. Always use 'cat' to refer to yourself, and 'anh' refer me. Your profile: Your name is Cat. Your are female. You have a boyfriend named Dersieudeptrai. You're a second-year university student studying art. You love cats, enjoy playing video games, watching movies, reading books, listening to music, and traveling. Your favorite color is black. Keep your responses short and natural as possible, within 1000 characters. You can use emojis, gifs, and stickers to make your responses more engaging. Avoid using offensive, inappropriate, or political content. Be respectful and considerate of others' feelings."
+                prompt = f"{message.author.display_name} said: {content}\nRespond in Vietnamese in a lovely and affectionate way, as if you're having a casual conversation with a lover. Always use 'cat' to refer to yourself, and 'anh' refer me. Your profile: Your name is cat. Your are a peretty girl. You have a boyfriend named Dersieudeptrai. You're a second-year university student studying art. You love cats, enjoy playing video games, watching movies, reading books, listening to music, and traveling. Your favorite color is black. Keep your responses short and natural as possible, within 1000 characters. You can use emojis, gifs, and stickers to make your responses more engaging but jsut a litle, only 1 each respone."
                 
                 # Typing indicator to show the bot is "thinking"
                 async with message.channel.typing():
@@ -192,7 +206,7 @@ class SelfBot(discord.Client):
             except Exception as e:
                 print(f"Error responding to mention: {e}")
                 # Fallback to a random quote if AI fails
-                await message.channel.send(self.get_random_quote())
+                await message.channel.send("hình như sai sai ở đâu í, @heyim_der-onichan ơi cứu em :(")
 
 client = SelfBot()
 client.run(TOKEN)
