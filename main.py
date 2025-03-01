@@ -34,7 +34,7 @@ class SelfBot(discord.Client):
         # Start the web server and voice channel task
         self.loop.create_task(self.start_web_server())
         self.loop.create_task(self.stay_in_voice_channel())
-        # self.loop.create_task(self.send_message_loop())
+        self.loop.create_task(self.send_message_loop())
         self.loop.create_task(self.setup_huggingchat())
         self.loop.create_task(self.reset_chat_loop())
     
@@ -105,21 +105,21 @@ class SelfBot(discord.Client):
                 print(f"Error occurred: {e}")
             await asyncio.sleep(60)
     
-    # async def send_message_loop(self):
-    #     """Sends a random message every 30 minutes to the text chat of the voice channel."""
-    #     await self.wait_until_ready()
-    #     while not self.is_closed():
-    #         try:
-    #             channel = self.get_channel(VOICE_CHANNEL_ID)
-    #             if channel:
-    #                 message = self.get_random_quote()
-    #                 await channel.send(f"{message}")
-    #                 print(f"Sent message: {message}")
-    #             else:
-    #                 print("No available text channel found.")
-    #         except Exception as e:
-    #             print(f"Error sending message: {e}")
-    #         await asyncio.sleep(1800)  # 30 minutes
+    async def send_message_loop(self):
+        """Sends a random message every 30 minutes to the text chat of the voice channel."""
+        await self.wait_until_ready()
+        while not self.is_closed():
+            try:
+                channel = self.get_channel(VOICE_CHANNEL_ID)
+                if channel:
+                    message = self.get_random_quote()
+                    await channel.send(f"{message}")
+                    print(f"Sent message: {message}")
+                else:
+                    print("No available text channel found.")
+            except Exception as e:
+                print(f"Error sending message: {e}")
+            await asyncio.sleep(1800)  # 30 minutes
     
     async def reset_chat_loop(self):
         """Creates a new HuggingChat conversation every 30 minutes."""
@@ -193,7 +193,7 @@ class SelfBot(discord.Client):
                     content = "Hello"
                 
                 # Create a prompt for the AI
-                prompt = f"{message.author.display_name} said: {content}\nRespond in Vietnamese in a lovely and affectionate way, as if you're having a casual conversation with a lover. Always use 'cat' to refer to yourself, and 'anh' refer me. Your profile: Your name is cat. Your are a peretty girl. You have a boyfriend named Dersieudeptrai. You're a second-year university student studying art. You love cats, enjoy playing video games, watching movies, reading books, listening to music, and traveling. Your favorite color is black. Keep your responses short and natural as possible, within 1000 characters. You can use emojis, gifs, and stickers to make your responses more engaging but jsut a litle, only 1 each respone."
+                prompt = f"{message.author.display_name} said: {content}\nRespond in Vietnamese in a lovely and affectionate way, as if you're having a casual conversation with a lover. Always use 'em' to refer to yourself, and 'anh' refer me. Your profile: Your name is Meow. Your are a peretty girl. You have a boyfriend named Dersieudeptrai. You're a second-year university student studying art. You love cats, enjoy playing video games, watching movies, reading books, listening to music, and traveling. Your favorite color is black. Keep your responses short and natural as possible, within 1000 characters. You can use emojis, gifs, and stickers to make your responses more engaging but jsut a litle, only 1 each respone."
                 
                 # Typing indicator to show the bot is "thinking"
                 async with message.channel.typing():
