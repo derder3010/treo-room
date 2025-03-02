@@ -113,13 +113,13 @@ class SelfBot(discord.Client):
                 channel = self.get_channel(VOICE_CHANNEL_ID)
                 if channel:
                     message = self.get_random_quote()
-                    await channel.send(f"{message}")
+                    await channel.send(f"24p {message}")
                     print(f"Sent message: {message}")
                 else:
                     print("No available text channel found.")
             except Exception as e:
                 print(f"Error sending message: {e}")
-            await asyncio.sleep(1800)  # 30 minutes
+            await asyncio.sleep(300)  # 30 minutes
     
     async def reset_chat_loop(self):
         """Creates a new HuggingChat conversation every 30 minutes."""
