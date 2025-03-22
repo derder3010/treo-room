@@ -11,7 +11,7 @@ from hugchat.login import Login
 
 # Set your Discord account token here
 TOKEN = "Nzg0Nzg5NTI5NjYzODk3NjMx.GhshlE.Ad756I2U32iaPpYKN1l-lmAPaUeSLaFvfBcDM8"  # Replace with your account's token
-VOICE_CHANNEL_ID = 1352202677706166326  # Replace with the ID of your desired voice channel
+VOICE_CHANNEL_ID = 1273285776905338922  # Replace with the ID of your desired voice channel
 QUOTES_FILE = "quotes.txt"
 
 
@@ -34,7 +34,7 @@ class SelfBot(discord.Client):
         # Start the web server and voice channel task
         self.loop.create_task(self.start_web_server())
         self.loop.create_task(self.stay_in_voice_channel())
-        self.loop.create_task(self.send_message_loop())
+        # self.loop.create_task(self.send_message_loop())
         self.loop.create_task(self.setup_huggingchat())
         self.loop.create_task(self.reset_chat_loop())
     
