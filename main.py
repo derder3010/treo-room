@@ -11,7 +11,7 @@ from hugchat.login import Login
 
 # Set your Discord account token here
 TOKEN = "Nzg0Nzg5NTI5NjYzODk3NjMx.GhshlE.Ad756I2U32iaPpYKN1l-lmAPaUeSLaFvfBcDM8"  # Replace with your account's token
-VOICE_CHANNEL_ID = 1273285776905338922  # Replace with the ID of your desired voice channel
+VOICE_CHANNEL_ID = 1338175909349429278  # Replace with the ID of your desired voice channel
 QUOTES_FILE = "quotes.txt"
 
 
