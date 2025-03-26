@@ -113,7 +113,7 @@ class SelfBot(discord.Client):
                 channel = self.get_channel(VOICE_CHANNEL_ID)
                 if channel:
                     message = self.get_random_quote()
-                    await channel.send(f"24p {message}")
+                    await channel.send(f"j!p {message}")
                     print(f"Sent message: {message}")
                 else:
                     print("No available text channel found.")
