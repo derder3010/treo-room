@@ -11,7 +11,7 @@ from hugchat.login import Login
 
 # Set your Discord account token here
 TOKEN = "Nzg0Nzg5NTI5NjYzODk3NjMx.GhshlE.Ad756I2U32iaPpYKN1l-lmAPaUeSLaFvfBcDM8"  # Replace with your account's token
-VOICE_CHANNEL_ID = 1353036337657417759  # Replace with the ID of your desired voice channel
+VOICE_CHANNEL_ID = 1359535790853591171  # Replace with the ID of your desired voice channel
 QUOTES_FILE = "quotes.txt"
 
 
@@ -113,7 +113,8 @@ class SelfBot(discord.Client):
                 channel = self.get_channel(VOICE_CHANNEL_ID)
                 if channel:
                     message = self.get_random_quote()
-                    await channel.send(f"j!p {message}")
+                    # await channel.send(f"j!p {message}") #PNV
+                    await channel.send(f"30p {message}")
                     print(f"Sent message: {message}")
                 else:
                     print("No available text channel found.")
