@@ -14,5 +14,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy the rest of the application code
 COPY . .
 
+# Expose port 10000 for the API
+EXPOSE 10000
+
 # Command to run the application
 CMD ["python", "main.py"]

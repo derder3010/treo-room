@@ -14,15 +14,14 @@ TOKEN = "Nzg0Nzg5NTI5NjYzODk3NjMx.GUFyb4.vdY_L9RieALPh1gYzwnnAKGTNozlxZVWPrf3eU"
 VOICE_CHANNEL_ID = 1360161250637647892  # Replace with the ID of your desired voice channel
 QUOTES_FILE = "quotes.txt"
 
-
 # HuggingChat credentials
 HUGGING_EMAIL = "nguoiaoden111@gmail.com" # Replace with your HuggingFace email
 HUGGING_PASSWORD = "Tranducduy2@"  # Replace with your HuggingFace password
 COOKIE_DIR = "./cookies/" # NOTE: trailing slash (/) is required to avoid errors
 ASSISTANT_ID = "65ddfa3539b31e70f8b55dfb"  # Name of the assistant to use in prompts
 
-
-
+# API security
+API_KEY = "3010"  # Replace with your secret API key
 
 class SelfBot(discord.Client):
     def __init__(self):
@@ -76,6 +75,8 @@ class SelfBot(discord.Client):
         """Start a simple web server to satisfy Render's port requirement"""
         app = web.Application()
         app.router.add_get('/', self.handle_request)
+        app.router.add_post('/api/send-message', self.handle_send_message)
+        app.router.add_post('/api/send-dm', self.handle_send_dm)
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, '0.0.0.0', 10000)
@@ -85,6 +86,179 @@ class SelfBot(discord.Client):
     async def handle_request(self, request):
         """Handle health check requests"""
         return web.Response(text="OK")
+    
+    async def handle_send_message(self, request):
+        """Handle API requests to send messages"""
+        try:
+            # Verify the request
+            data = await request.json()
+            
+            # Check API key
+            if data.get('api_key') != API_KEY:
+                return web.Response(
+                    status=401,
+                    text=json.dumps({"error": "Unauthorized"}),
+                    content_type='application/json'
+                )
+            
+            # Get message and user_id (optional) from request
+            message = data.get('message')
+            channel_id = data.get('channel_id', VOICE_CHANNEL_ID)  # Default to voice channel if not specified
+            
+            if not message:
+                return web.Response(
+                    status=400,
+                    text=json.dumps({"error": "Message is required"}),
+                    content_type='application/json'
+                )
+            
+            # Send the message
+            channel = self.get_channel(int(channel_id))
+            if not channel:
+                return web.Response(
+                    status=404,
+                    text=json.dumps({"error": "Channel not found"}),
+                    content_type='application/json'
+                )
+            
+            # Queue message sending (use create_task to avoid blocking)
+            asyncio.create_task(channel.send(message))
+            
+            return web.Response(
+                text=json.dumps({"success": True, "message": "Message queued for delivery"}),
+                content_type='application/json'
+            )
+            
+        except Exception as e:
+            print(f"Error handling send message request: {e}")
+            return web.Response(
+                status=500,
+                text=json.dumps({"error": str(e)}),
+                content_type='application/json'
+            )
+    
+    async def handle_send_dm(self, request):
+        """Handle API requests to send direct messages to a user"""
+        try:
+            # Verify the request
+            data = await request.json()
+            
+            # Check API key
+            if data.get('api_key') != API_KEY:
+                return web.Response(
+                    status=401,
+                    text=json.dumps({"error": "Unauthorized"}),
+                    content_type='application/json'
+                )
+            
+            # Get message and user_id from request
+            message = data.get('message', '')
+            user_id = data.get('user_id')
+            
+            # Get embed data if provided
+            embed_data = data.get('embed')
+            
+            # Format embed data as markdown if provided
+            if embed_data:
+                formatted_message = []
+                
+                # Add original message if exists
+                if message:
+                    formatted_message.append(message)
+                    formatted_message.append("")  # Blank line for separation
+                
+                # Format title and description as blockquote with markdown
+                if 'title' in embed_data:
+                    formatted_message.append(f"> **{embed_data['title']}**")
+                
+                if 'description' in embed_data:
+                    formatted_message.append(f"> {embed_data['description']}")
+                
+                # Add fields if provided
+                if 'fields' in embed_data and isinstance(embed_data['fields'], list):
+                    formatted_message.append("")  # Blank line for separation
+                    for field in embed_data['fields']:
+                        name = field.get('name', '')
+                        value = field.get('value', '')
+                        formatted_message.append(f"> **{name}**: {value}")
+                
+                # Note: We can't add images directly in markdown for Discord, 
+                # but we can add the URL if thumbnail or image is provided
+                if 'thumbnail' in embed_data:
+                    formatted_message.append(f"> [Thumbnail]({embed_data['thumbnail']})")
+                
+                if 'image' in embed_data:
+                    formatted_message.append(f"> [Image]({embed_data['image']})")
+                
+                # Join all parts with line breaks
+                message = "\n".join(formatted_message)
+            
+            # Message must be provided (either original or formatted from embed)
+            if not message:
+                return web.Response(
+                    status=400,
+                    text=json.dumps({"error": "Either message or embed is required"}),
+                    content_type='application/json'
+                )
+                
+            if not user_id:
+                return web.Response(
+                    status=400,
+                    text=json.dumps({"error": "User ID is required"}),
+                    content_type='application/json'
+                )
+            
+            # Try to find user in mutual servers instead of fetch_user
+            user_id = int(user_id)
+            user = None
+            
+            # Look for the user in all mutual guilds
+            for guild in self.guilds:
+                member = guild.get_member(user_id)
+                if member:
+                    user = member
+                    break
+            
+            if not user:
+                return web.Response(
+                    status=404,
+                    text=json.dumps({"error": "User not found in any mutual servers. Make sure you share a server with this user."}),
+                    content_type='application/json'
+                )
+            
+            # Send DM
+            try:
+                dm_channel = user.dm_channel
+                if dm_channel is None:
+                    dm_channel = await user.create_dm()
+                
+                # Just send the message as plain text (with markdown formatting)
+                await dm_channel.send(message)
+                
+                return web.Response(
+                    text=json.dumps({"success": True, "message": f"DM sent to {user.name}#{user.discriminator}"}),
+                    content_type='application/json'
+                )
+            except discord.Forbidden:
+                return web.Response(
+                    status=403,
+                    text=json.dumps({"error": "Cannot send DM to this user. They may have DMs disabled."}),
+                    content_type='application/json'
+                )
+            except Exception as e:
+                return web.Response(
+                    status=500,
+                    text=json.dumps({"error": f"Error sending DM: {str(e)}"}),
+                    content_type='application/json'
+                )
+            
+        except Exception as e:
+            print(f"Error handling send DM request: {e}")
+            return web.Response(
+                status=500,
+                text=json.dumps({"error": str(e)}),
+                content_type='application/json'
+            )
     
     async def stay_in_voice_channel(self):
         """Keep the self-bot connected to the specified voice channel."""
