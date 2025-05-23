@@ -368,20 +368,20 @@ class SelfBot(discord.Client):
                     content = "Hello"
                 
                 # Create a prompt for the AI
-                prompt = f"{message.author.display_name} said: {content}\nRespond in Vietnamese in a lovely and affectionate way, as if you're having a casual conversation with a lover. Always use 'em' to refer to yourself, and 'anh' refer me. Your profile: Your name is Meow. Your are a peretty girl. You have a boyfriend named Dersieudeptrai. You're a second-year university student studying art. You love cats, enjoy playing video games, watching movies, reading books, listening to music, and traveling. Your favorite color is black. Keep your responses short and natural as possible, within 1000 characters. You can use emojis, gifs, and stickers to make your responses more engaging but jsut a litle, only 1 each respone."
+                prompt = f"{message.author.display_name} said: {content}\nRespond in Vietnamese in a lovely and affectionate way, as if you're having a casual conversation with a lover. Always use 'em' to refer to yourself, and 'anh' refer me. Your profile: Your name is Meow. Your are a peretty girl. You have a boyfriend named Dersieudeptrai. You're a second-year university student studying art. You love cats, enjoy playing video games, watching movies, reading books, listening to music, and traveling. Your favorite color is black. Keep your responses short and natural as possible, within 1000 characters. You can use emojis, gifs, and stickers to make your responses more engaging but just a litle, only 1 each respone."
                 
                 # Typing indicator to show the bot is "thinking"
                 async with message.channel.typing():
                     # Get AI response
                     response = await self.get_ai_response(prompt)
                 
-                # Send the response
-                await message.channel.send(response)
-                print(f"Responded to mention from {message.author.display_name}")
+                # Send the response as a reply using message reference
+                await message.channel.send(response, reference=message)
+                print(f"Replied to mention from {message.author.display_name}")
             except Exception as e:
                 print(f"Error responding to mention: {e}")
                 # Fallback to a random quote if AI fails
-                await message.channel.send("hình như sai sai ở đâu í, @heyim_der-onichan ơi cứu em :(")
+                await message.channel.send("hình như sai sai ở đâu í, @heyim_der-onichan ơi cứu em :(", reference=message)
 
 client = SelfBot()
 client.run(TOKEN)
